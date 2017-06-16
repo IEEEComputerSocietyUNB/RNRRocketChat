@@ -12,12 +12,14 @@ sensorport.readline();
 
 # Ler os dados
 while sensorport.isOpen():
-    '''Ler Arduino e Separa dados dos sensores'''
-    line = sensorport.readline()
-    raw_reading = line.rstrip('\r\n').split(";")
-    sensor_reading = map(raw_reading,float)
-
-    # @todo Colocar API rocketchat
-    print sensor_reading
+	'''Ler Arduino e Separa dados dos sensores'''
+    
+	try:
+		line = sensorport.readline()
+    		raw_reading = line.rstrip('\r\n').split(";")
+    		sensor_reading = map(float, raw_reading)
+	except:
+    		# @todo Colocar API rocketchat
+   	 	print sensor_reading
 
 sensorport.close()
