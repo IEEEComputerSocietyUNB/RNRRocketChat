@@ -2,35 +2,49 @@
 
 import serial, requests, json
 
-port = '/dev/ttyUSB0'
+port = '/dev/ttyACM1'
 baudrate = 9600
+UP = 10
 
-webhook = "https://ieee.rocket.chat/hooks/QyENddBsodbMzyKz3/G6XB6iyCgbbgPwf9BaZAtP7pDFzaFFuiiXig9rZ2Mo2diCRN"
-token = "QyENddBsodbMzyKz3/G6XB6iyCgbbgPwf9BaZAtP7pDFzaFFuiiXig9rZ2Mo2diCRN"
+webhook = 'https://chat.hacklab.com.br/hooks/pzpKQHy7Zus2epbep/w6FdspG3u456x7qQKjhkfyuYjF2QCvDKfYTLYLkkayKqqiJz'
 
-# curl -X POST -H 'Content-Type: application/json' --data '{"text":"Example message","attachments":[{"title":"Rocket.Chat","title_link":"https://rocket.chat","text":"Rocket.Chat, the best open source chat","image_url":"https://rocket.chat/images/mockup.png","color":"#764FA5"}]}' https://ieee.rocket.chat/hooks/QyENddBsodbMzyKz3/G6XB6iyCgbbgPwf9BaZAtP7pDFzaFFuiiXig9rZ2Mo2diCRN
+# curl -X POST -H 'Content-Type: application/json' 
+# --data '{"text":"Example message", "attachments": 
+# [{"title":"Rocket.Chat", 
+# "title_link":"https://rocket.chat", 
+# "text":"Rocket.Chat, the best open source chat",
+# "image_url":"https://rocket.chat/images/mockup.png","color":"#764FA5"}]}' 
+# https://ieee.rocket.chat/hooks/QyENddBsodbMzyKz3/G6XB6iyCgbbgPwf9BaZAtP7pDFzaFFuiiXig9rZ2Mo2diCRN
 headers = {"Content-Type": "application/json"}
 data = {}
 
 sensorport = serial.Serial(port,baudrate)
 
 # Ler Primeira Linha
-sensorport.readline();
+sensorport.readline()
 
+last_sensor = [0, 11]
 # Ler os dados
 while sensorport.isOpen():
 	'''Ler Arduino e Separa dados dos sensores'''
-    
+
 	try:
 		line = sensorport.readline()
-    		raw_reading = line.rstrip('\r\n').split(";")
-    		sensor_reading = map(float, raw_reading)
-	except:
-		# retorna
-		# [float(temp),float(luminosidade)]
+    		raw_reading = line.rstrip('\r\n').split(';')
+    		# return [float(temp), float(lum)]
 		# [celsius, 0:5]
-   	 	print sensor_reading
+		sensor_reading = map(float, raw_reading)
+		
+		if sensor_reading[1] >= UP and last_sensor[1] < UP:
+			print 'ACESO'
+			last_sensor = sensor_reading
+		elif sensor_reading[1] < UP and last_sensor[1] >= UP:	
+			print 'DESLIGADO'
+			last_sensor = sensor_reading
+		# print sensor_reading
 		data = { "temp": sensor_reading[0], "lum": sensor_reading[1]}
-    		response = requests.post(webhook, data=json.dumps(data), headers=headers)
+		#response = requests.post(webhook, data=json.dumps(data), headers=headers)
+	except:
+		pass
 
 sensorport.close()
