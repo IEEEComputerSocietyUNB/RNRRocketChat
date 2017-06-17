@@ -6,7 +6,7 @@ port = '/dev/ttyACM1'
 baudrate = 9600
 UP = 10
 
-webhook = 'https://chat.hacklab.com.br/hooks/pzpKQHy7Zus2epbep/w6FdspG3u456x7qQKjhkfyuYjF2QCvDKfYTLYLkkayKqqiJz'
+webhook = 'https://ieee.rocket.chat/hooks/QyENddBsodbMzyKz3/G6XB6iyCgbbgPwf9BaZAtP7pDFzaFFuiiXig9rZ2Mo2diCRN'
 
 # curl -X POST -H 'Content-Type: application/json' 
 # --data '{"text":"Example message", "attachments": 
@@ -36,14 +36,15 @@ while sensorport.isOpen():
 		sensor_reading = map(float, raw_reading)
 		
 		if sensor_reading[1] >= UP and last_sensor[1] < UP:
-			print 'ACESO'
+			print sensor_reading[0], 'ACESO'
 			last_sensor = sensor_reading
+			data = { "temp": sensor_reading[0], "lum": 1}
+	                response = requests.post(webhook, data=json.dumps(data), headers=headers)
 		elif sensor_reading[1] < UP and last_sensor[1] >= UP:	
-			print 'DESLIGADO'
+			print sensor_reading[0], 'DESLIGADO'
 			last_sensor = sensor_reading
-		# print sensor_reading
-		data = { "temp": sensor_reading[0], "lum": sensor_reading[1]}
-		#response = requests.post(webhook, data=json.dumps(data), headers=headers)
+			data = { "temp": sensor_reading[0], "lum": 0}
+                        response = requests.post(webhook, data=json.dumps(data), headers=headers)			
 	except:
 		pass
 
